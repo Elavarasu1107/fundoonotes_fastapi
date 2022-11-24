@@ -18,3 +18,10 @@ class UserValidator(BaseModel):
 class UserLoginValidator(BaseModel):
     username: str
     password: str
+
+
+class NotesValidator(BaseModel):
+    id: int|None
+    title: str
+    description: str
+    user_id: int|None

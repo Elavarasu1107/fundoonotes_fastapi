@@ -80,6 +80,7 @@ class User(Base):
     phone = Column(BigInteger)
     location = Column(String(150))
     is_superuser = Column(Boolean, default=False)
+    notes = relationship("Notes", back_populates="user")
     objects = Manager()
 
     def __repr__(self):
@@ -89,3 +90,21 @@ class User(Base):
     def to_dict(self):
         return {"id": self.id, "username": self.username, "first_name": self.first_name, "last_name": self.last_name,
                 "email": self.email, "phone": self.phone, "location": self.location}
+
+
+class Notes(Base):
+    __tablename__ = "notes"
+
+    id = Column(BigInteger, primary_key=True, index=True)
+    title = Column(String(150))
+    description = Column(String(150))
+    user_id = Column(BigInteger, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    user = relationship("User", back_populates="notes")
+    objects = Manager()
+
+    def __repr__(self):
+        return f"User(id={self.id!r})"
+
+    
+    def to_dict(self):
+        return {"id": self.id, "title": self.title, "description": self.description, "user_id": self.user_id}

@@ -6,7 +6,7 @@ from validators import UserLoginValidator, UserValidator
 
 router = APIRouter()
 
-@router.post("/register/")
+@router.post("/register/", status_code=status.HTTP_201_CREATED)
 def user_register(payload: UserValidator, response: Response):
     """
     This function registers user to the database
@@ -17,10 +17,10 @@ def user_register(payload: UserValidator, response: Response):
     except Exception as ex:
         logger.exception(ex)
         response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"message": str(ex), "status": 400, "data": {}}
+        return {"message": str(ex)}
 
 
-@router.post("/login/")
+@router.post("/login/", status_code=status.HTTP_202_ACCEPTED)
 def user_login(payload: UserLoginValidator, response: Response):
     try:
         user = User.objects.get_or_none(**payload.dict())
