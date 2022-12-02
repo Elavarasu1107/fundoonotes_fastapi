@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, Request, Response, status
+from sqlalchemy.orm import Session
 
-from models import Notes, User
+from models import Collaborator, Notes, User, engine
 from utils import logger, verify_user
-from validators import IdValidator, NotesValidator
+from validators import AddCollaborator, IdValidator, NotesValidator, RemoveCollaborator
 
 router = APIRouter()
 
@@ -43,6 +44,35 @@ def update_note(payload: NotesValidator, response: Response, user: User=Depends(
 def update_note(payload: IdValidator, response: Response, user: User=Depends(verify_user)):
     try:
         Notes.objects.delete(id=payload.id, user_id=user.id)
+    except Exception as ex:
+        logger.exception(ex)
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"message": str(ex)}
+
+@router.post("/add_collaborator/", status_code=status.HTTP_201_CREATED)
+def add_collaborator(payload: AddCollaborator, response: Response, user: User=Depends(verify_user)):
+    try:
+        note = Notes.objects.get(id=payload.note_id, user_id=user.id)
+        for user_id in payload.user_id:
+            if user_id != user.id:
+                collaborator = User.objects.get(id=user_id)
+                note.users.append(collaborator)
+        note.objects.save()
+        return {"message": "Collaborator Added"}
+    except Exception as ex:
+        logger.exception(ex)
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"message": str(ex)}
+
+@router.delete("/delete_collaborator/", status_code=status.HTTP_204_NO_CONTENT)
+def add_collaborator(payload: RemoveCollaborator, response: Response, user: User=Depends(verify_user)):
+    try:
+        note = Notes.objects.get(id=payload.note_id, user_id=user.id)
+        for user_id in payload.collaborator:
+            collaborator = User.objects.get(id=user_id)
+            note.users.remove(collaborator)
+        note.objects.save()
+        return {"message": "Collaborator Deleted"}
     except Exception as ex:
         logger.exception(ex)
         response.status_code = status.HTTP_400_BAD_REQUEST
