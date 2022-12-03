@@ -72,10 +72,6 @@ class Manager:
         instance_list = session.query(self.model).all()
         return instance_list
 
-    def m2m_filter(self, **payload):
-        instance_list = session.query(self.model).filter_by(or_(**payload)).all()
-        return instance_list
-
     def save(self):
         session.commit()
 
@@ -117,14 +113,20 @@ class Notes(Base):
     user_id = Column(BigInteger, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     user = relationship("User", back_populates="notes")
     users = relationship("User", secondary="collaborator", overlaps='notes')
+    labels = relationship("Labels", secondary="labels_notes", overlaps='notes')
     objects = Manager()
 
     def __repr__(self):
-        return f"User(id={self.id!r})"
+        return f"Notes(id={self.id!r})"
+
+    def collaborator_id(self):
+        ids = [user.id for user in self.users]
+        return ids
 
     
     def to_dict(self):
-        return {"id": self.id, "title": self.title, "description": self.description, "user_id": self.user_id}
+        return {"id": self.id, "title": self.title, "description": self.description, "user_id": self.user_id, 
+                "collaborator": self.collaborator_id()}
 
 
 class Collaborator(Base):
@@ -135,4 +137,31 @@ class Collaborator(Base):
     note_id = Column(BigInteger, ForeignKey("notes.id", ondelete="CASCADE"), nullable=False)
 
     def __repr__(self):
-        return f"User(id={self.id!r})"
+        return f"Collaborator(id={self.id!r})"
+
+
+class Labels(Base):
+    __tablename__ = "labels"
+
+    id = Column(BigInteger, primary_key=True, index=True)
+    title = Column(String(150))
+    color = Column(String(150))
+    notes = relationship("Notes", secondary="labels_notes")
+    objects = Manager()
+
+    def __repr__(self):
+        return f"Labels(id={self.id!r})"
+
+    def to_dict(self):
+        return {"id": self.id, "title": self.title, "color": self.color}
+
+
+class LabelsNotes(Base):
+    __tablename__ = "labels_notes"
+
+    id = Column(BigInteger, primary_key=True, index=True)
+    note_id = Column(BigInteger, ForeignKey("notes.id", ondelete="CASCADE"), nullable=False)
+    label_id = Column(BigInteger, ForeignKey("labels.id", ondelete="CASCADE"), nullable=False)
+
+    def __repr__(self):
+        return f"LabelsNotes(id={self.id!r})"

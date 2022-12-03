@@ -36,3 +36,14 @@ class AddCollaborator(BaseModel):
 class RemoveCollaborator(BaseModel):
     note_id: int
     collaborator: list[int]
+
+
+class LabelValidator(BaseModel):
+    id: int|None
+    title: str
+    color: str
+
+
+class LabelNotesValidator(BaseModel):
+    note_id: int
+    label_id: list[int]
