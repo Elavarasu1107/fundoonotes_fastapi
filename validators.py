@@ -25,3 +25,25 @@ class NotesValidator(BaseModel):
     title: str
     description: str
     user_id: int|None
+
+
+class AddCollaborator(BaseModel):
+    id: int|None
+    user_id: list[int]
+    note_id: int
+
+
+class RemoveCollaborator(BaseModel):
+    note_id: int
+    collaborator: list[int]
+
+
+class LabelValidator(BaseModel):
+    id: int|None
+    title: str
+    color: str
+
+
+class LabelNotesValidator(BaseModel):
+    note_id: int
+    label_id: list[int]
