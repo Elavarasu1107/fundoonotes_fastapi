@@ -22,6 +22,10 @@ def get_note(response: Response, user: User=Depends(verify_user)):
     try:
         notes = Notes.objects.filter(user_id=user.id)
         note_list = [note.to_dict() for note in notes]
+        collaborators = Collaborator.objects.filter(user_id=user.id)
+        for collaborator in collaborators:
+            note = Notes.objects.get(id=collaborator.note_id)
+            note_list.append(note.to_dict())
         return note_list
     except Exception as ex:
         logger.exception(ex)

@@ -112,7 +112,7 @@ class Notes(Base):
     description = Column(String(150))
     user_id = Column(BigInteger, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     user = relationship("User", back_populates="notes")
-    users = relationship("User", secondary="collaborator", overlaps='notes')
+    users = relationship("User", secondary="collaborator", overlaps='notes,users')
     labels = relationship("Labels", secondary="labels_notes", overlaps='notes')
     objects = Manager()
 
@@ -123,10 +123,13 @@ class Notes(Base):
         ids = [user.id for user in self.users]
         return ids
 
+    def label_id(self):
+        ids = [label.id for label in self.labels]
+        return ids
     
     def to_dict(self):
         return {"id": self.id, "title": self.title, "description": self.description, "user_id": self.user_id, 
-                "collaborator": self.collaborator_id()}
+                "collaborator": self.collaborator_id(), "label": self.label_id()}
 
 
 class Collaborator(Base):
@@ -134,7 +137,10 @@ class Collaborator(Base):
 
     id = Column(BigInteger, primary_key=True, index=True)
     user_id = Column(BigInteger, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    user = relationship("User", backref="collaborator", overlaps='notes,users')
     note_id = Column(BigInteger, ForeignKey("notes.id", ondelete="CASCADE"), nullable=False)
+    note = relationship("Notes", backref="collaborator", overlaps='notes,users')
+    objects = Manager()
 
     def __repr__(self):
         return f"Collaborator(id={self.id!r})"
@@ -146,7 +152,7 @@ class Labels(Base):
     id = Column(BigInteger, primary_key=True, index=True)
     title = Column(String(150))
     color = Column(String(150))
-    notes = relationship("Notes", secondary="labels_notes")
+    notes = relationship("Notes", secondary="labels_notes", overlaps="labels")
     objects = Manager()
 
     def __repr__(self):
