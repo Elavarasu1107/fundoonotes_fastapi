@@ -92,7 +92,7 @@ class User(Base):
     location = Column(String(150))
     is_superuser = Column(Boolean, default=False)
     note = relationship("Notes", back_populates="user")
-    notes = relationship("Notes", secondary="collaborator")
+    notes = relationship("Notes", secondary="collaborator", overlaps='user')
     objects = Manager()
 
     def __repr__(self):
@@ -137,9 +137,9 @@ class Collaborator(Base):
 
     id = Column(BigInteger, primary_key=True, index=True)
     user_id = Column(BigInteger, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
-    user = relationship("User", backref="collaborator", overlaps='notes,users')
+    # user = relationship("User", backref="collaborator", overlaps='notes,users')
     note_id = Column(BigInteger, ForeignKey("notes.id", ondelete="CASCADE"), nullable=False)
-    note = relationship("Notes", backref="collaborator", overlaps='notes,users')
+    # note = relationship("Notes", backref="collaborator", overlaps='notes,users')
     objects = Manager()
 
     def __repr__(self):
