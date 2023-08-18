@@ -75,3 +75,17 @@ def verify_superuser(request: Request)-> User:
     if not user.is_superuser:
         raise HTTPException(detail='User not authorized', status_code=404)
     return user
+
+
+class ApiException(Exception):
+    message = None
+    status = None
+
+    def __init__(self, message='Bad Request' , code=400, data=None):
+        self.message = message
+        self.status = code
+        if data:
+            self.data = data
+
+    def __str__(self):
+        return f'{self.message}'
